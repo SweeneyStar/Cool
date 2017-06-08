@@ -2,20 +2,19 @@ package com.example.thinkpad.cool.util;
 
 import android.text.TextUtils;
 
-import com.example.thinkpad.coolweather.db.City;
-import com.example.thinkpad.coolweather.db.County;
-import com.example.thinkpad.coolweather.db.Province;
+import com.example.thinkpad.cool.db.City;
+import com.example.thinkpad.cool.db.County;
+import com.example.thinkpad.cool.db.Province;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Created by Thinkpad on 2017/6/7.
+ * Created by Thinkpad on 2017/6/8.
  */
 
 public class Utility {
-
     public static boolean handleProvinceResponse(String response){
         if (!TextUtils.isEmpty(response)){
             try {
@@ -55,8 +54,8 @@ public class Utility {
         return false;
     }
 
-    public static boolean handleCountyResponse(String response,int cityId){
-        if (!TextUtils.isEmpty(response)){
+    public static boolean handleCountyResponse(String response,int cityId) {
+        if (!TextUtils.isEmpty(response)) {
             try {
                 JSONArray allCoounties = new JSONArray(response);
                 for (int i = 0; i < allCoounties.length(); i++) {
@@ -68,7 +67,7 @@ public class Utility {
                     county.save();
                 }
                 return true;
-            }catch (JSONException e){
+            } catch (JSONException e) {
                 e.printStackTrace();
             }
         }

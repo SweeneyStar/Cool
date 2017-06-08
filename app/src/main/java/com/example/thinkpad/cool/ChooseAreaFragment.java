@@ -14,11 +14,12 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.thinkpad.coolweather.db.City;
-import com.example.thinkpad.coolweather.db.County;
-import com.example.thinkpad.coolweather.db.Province;
-import com.example.thinkpad.coolweather.util.HttpUtil;
-import com.example.thinkpad.coolweather.util.Utility;
+
+import com.example.thinkpad.cool.db.City;
+import com.example.thinkpad.cool.db.County;
+import com.example.thinkpad.cool.db.Province;
+import com.example.thinkpad.cool.util.HttpUtil;
+import com.example.thinkpad.cool.util.Utility;
 
 import org.litepal.crud.DataSupport;
 
@@ -36,8 +37,8 @@ import okhttp3.Response;
 
 public class ChooseAreaFragment extends Fragment{
     public static final int LEVEL_PROVINCE =0;
-    public static final int LEVEL_CITY =0;
-    public static final int LEVEL_COUNTY =0;
+    public static final int LEVEL_CITY =1;
+    public static final int LEVEL_COUNTY =2;
     private ProgressDialog progressDialog;
     private TextView titleText;
     private Button backButton;
@@ -63,7 +64,6 @@ public class ChooseAreaFragment extends Fragment{
 
     private int currentLevel;
 
-    @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.choose_area,container,false);
@@ -80,7 +80,7 @@ public class ChooseAreaFragment extends Fragment{
         super.onActivityCreated(savedInstanceState);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (currentLevel == LEVEL_PROVINCE){
                     selectedProvince = provinceList.get(position);
                     queryCities();
@@ -103,23 +103,21 @@ public class ChooseAreaFragment extends Fragment{
         queryProvinces();
     }
 
-    private void queryCounties() {
-        titleText.setText(selectedCity.getCityName());
-        backButton.setVisibility(View.VISIBLE);
-        countyList = DataSupport.where("cityid = ?",String.valueOf(selectedCity.getId())).find(County.class);
-        if (countyList.size()>0){
+    private void queryProvinces() {
+        titleText.setText("中国");
+        backButton.setVisibility(View.GONE);
+        provinceList = DataSupport.findAll(Province.class);
+        if (provinceList.size() > 0){
             dataList.clear();
-            for (County county : countyList){
-                dataList.add(county.getCountyName());
+            for (Province province : provinceList){
+                dataList.add(province.getProvinceName());
             }
             adapter.notifyDataSetChanged();
             listView.setSelection(0);
-            currentLevel = LEVEL_COUNTY;
+            currentLevel = LEVEL_PROVINCE;
         }else {
-            int privinceCode = selectedProvince.getProvinceCode();
-            int cityCode = selectedCity.getCityCode();
-            String address = "http://guolin.tech/api/china/" + privinceCode + "/" + cityCode;
-            queryFormServer(address,"county");
+            String address = "http://guolin.tech/api/china";
+            queryFormServer(address,"province");
         }
     }
 
@@ -143,23 +141,26 @@ public class ChooseAreaFragment extends Fragment{
 
     }
 
-    private void queryProvinces() {
-        titleText.setText("中国");
-        backButton.setVisibility(View.GONE);
-        provinceList = DataSupport.findAll(Province.class);
-        if (provinceList.size()>0){
+    private void queryCounties() {
+        titleText.setText(selectedCity.getCityName());
+        backButton.setVisibility(View.VISIBLE);
+        countyList = DataSupport.where("cityid = ?",String.valueOf(selectedCity.getId())).find(County.class);
+        if (countyList.size()>0){
             dataList.clear();
-            for (Province province : provinceList){
-                dataList.add(province.getProvinceName());
+            for (County county : countyList){
+                dataList.add(county.getCountyName());
             }
             adapter.notifyDataSetChanged();
             listView.setSelection(0);
-            currentLevel = LEVEL_PROVINCE;
+            currentLevel = LEVEL_COUNTY;
         }else {
-            String address = "http://guolin.tech/api/china";
-            queryFormServer(address,"province");
+            int provinceCode = selectedProvince.getProvinceCode();
+            int cityCode = selectedCity.getCityCode();
+            String address = "http://guolin.tech/api/china/" + provinceCode + "/" + cityCode;
+            queryFormServer(address,"county");
         }
     }
+
 
     private void queryFormServer(String address, final String type) {
         showProgressDialog();
@@ -204,12 +205,6 @@ public class ChooseAreaFragment extends Fragment{
         });
     }
 
-    private void closeProgressDialog() {
-        if (progressDialog != null){
-            progressDialog.dismiss();
-        }
-    }
-
     private void showProgressDialog() {
         if (progressDialog == null){
             progressDialog = new ProgressDialog(getActivity());
@@ -218,5 +213,13 @@ public class ChooseAreaFragment extends Fragment{
         }
         progressDialog.show();
     }
+
+    private void closeProgressDialog() {
+        if (progressDialog != null){
+            progressDialog.dismiss();
+        }
+    }
+
+
 
 }
